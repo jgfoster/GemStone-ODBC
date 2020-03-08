@@ -1,0 +1,91 @@
+#ifndef GCIRTL_HF
+#define GCIRTL_HF TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - gcirtl.hf
+ *
+ * Description - Functional interface to the GemStone C interface (GCI).
+ *               This header file should be used by applications that
+ *               specify at runtime what version of the gci to use.
+ *               To specify it at build time use gci.hf.
+ *  This file allows GCI calls to be made to a dynamically loaded
+ *  GCI library. The GCI call can be done only after GciRtlLoad
+ *  has been called successfully. Any GCI call done when a library
+ *  has not been loaded will fail.
+ *
+ * $Id: gcirtl.hf 22222 2009-09-02 00:36:20Z stever $
+ *
+ *========================================================================
+ */
+#include "flag.ht"
+
+#if defined(FLG_UNIX)
+#include <inttypes.h>
+#include <sys/param.h>
+#elif defined(FLG_MSWIN32)
+#include <stdio.h> // FILENAME_MAX definition
+#endif
+
+/* no more system includes after this point */
+
+class GciRtlFnameBuf {
+ public:
+  char buf[FLG_FNAME_SIZE + 1];
+
+  inline void initialize() {
+    buf[0] = '\0';
+  }
+
+  GciRtlFnameBuf() {
+    initialize();
+  }
+};
+
+extern "C" {
+
+/********************** Public Functions **********************/
+
+/* GciRtlLoad will attempt to load a dynamic GCI library at the time
+ * it is called.
+ * If 'useRpc' is TRUE then the GCI loaded will be a rpc version.
+ * If 'useRpc' is FALSE then the GCI loaded will be a linked version.
+ * If 'path' is not NULL then it must point to a ';' seperated list
+ * of directories to search for the library to load. The directories
+ * in path will be searched before the defaults ones.
+ * If 'path' is NULL then only the default path will be searched.
+ * Returns TRUE if successful.
+ * Returns FALSE if it fails and if 'errBuf' is not NULL will load
+ * it with a null terminated error message.
+ * Note: this call will fail if a GCI library is already loaded.
+ */
+BoolType GciRtlLoad(BoolType useRpc, const char *path,
+	   char errBuf[], size_t errBufSize);
+
+BoolType GciRtlLoadA(BoolType useRpc, const char *path,
+	   char errBuf[], size_t errBufSize, GciRtlFnameBuf *vmLibPath/*output*/);
+
+/* GciTsLoad attempts to load the thread-safe GCI library .
+ * If 'path' is not NULL then it must point to a ';' seperated list
+ * of directories to search for the library to load. The directories
+ * in path will be searched before the defaults ones.
+ * If 'path' is NULL then only the default path will be searched.
+ * Returns TRUE if successful.
+ * Returns FALSE if it fails and if 'errBuf' is not NULL will load
+ * it with a null terminated error message.
+ * Note: this call will fail if a GCI library is already loaded.
+ */
+BoolType GciTsLoad(const char *path, char *errBuf, size_t errBufSize);
+
+/* GciRtlUnload will cause the library loaded by GciRtlLoad to
+ * be unloaded. Once it is unloaded GciRtlLoad can be called again
+ * to load a different GCI library.
+ */
+ void GciRtlUnload(void);
+
+/* GciRtlIsLoaded returns TRUE if a GCI is loaded and FALSE if not.
+ */
+BoolType GciRtlIsLoaded(void);
+} /* extern "C" */
+
+#endif /* GCIRTL_HF */

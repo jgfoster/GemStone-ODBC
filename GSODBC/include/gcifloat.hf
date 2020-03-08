@@ -1,0 +1,78 @@
+#ifndef GCIFLOAT_HF
+#define GCIFLOAT_HF TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - gcifloat.hf
+ *
+ * $Id: gcifloat.hf 32752 2014-02-28 22:11:10Z stever $
+ *
+ *  Macros, constants and functions for accessing the bodies of instances
+ *  of GemStone classes Float and SmallFloat.
+ *   
+ *  Use of things defined in this file may be needed if GciFetchBytes 
+ *  is used to retrieve the bodies of GemStone Floats or SmallFloats, or 
+ *  if the application desires to implement a GemStone class that is a byte
+ *  array of native floats.
+ *
+ *  Entries in this file are used in the implementation of Traversal
+ *  functions, GciCreateByteObj, and in GciStoreBytesInstanceOf
+ *========================================================================
+ */
+
+/* See gcicmn.ht for gcifloat macro definitions */
+#include "gcicmn.ht"
+
+/* no more includes. KEEP THIS LINE */
+
+/*
+ * The following constants are defined so we have control of values 
+ * used for exceptional floats. These values conform to IEEE 754, and do not 
+ * depend on compiler peculiarities.
+ *
+ *  GciFloatPlusInfinityVal 
+ *  GciFloatMinusInfinityVal
+ *  GciFloatPlusQuietNanVal
+ *  GciFloatMinusQuietNanVal
+ *  GciFloatPlusSignalingNanVal
+ *  GciFloatMinusSignalingNanVal
+ *
+ *=========================================================================
+ */
+
+extern "C" {
+
+EXTERN_GCI_DEC(double) GciFloatPlusInfinityVal(void);
+EXTERN_GCI_DEC(double) GciFloatMinusInfinityVal(void);
+EXTERN_GCI_DEC(double) GciFloatPlusQuietNanVal(void);
+EXTERN_GCI_DEC(double) GciFloatMinusQuietNanVal(void);
+EXTERN_GCI_DEC(double) GciFloatPlusSignalingNanVal(void);
+EXTERN_GCI_DEC(double) GciFloatMinusSignalingNanVal(void);
+
+/*=========================================================================
+ * GciFloatKindSign
+ *
+ * Returns the GciFloatKindEType of the argument for a normal or positive 
+ * float.  Returns  (-1 * (GciFloatKindEType of the argument) for a float 
+ * which has its sign bit set and which is an exceptional value.  An
+ * exceptional value is either a NaN or an Infinity.
+ *=========================================================================
+ */  
+
+  EXTERN_GCI_DEC(int)
+GciFloatKindSign(double aReal);
+
+/*=========================================================================
+ * GciFloatIsNaN
+ *
+ *   returns TRUE if the argument is a NaN , FALSE otherwise
+ *=========================================================================
+ */
+  EXTERN_GCI_DEC(BoolType)
+GciFloatIsNaN(double *floatPtr);
+
+					// deleted float swizzle functions
+
+} /* extern "C" */
+
+#endif /* GCIFLOAT_HF */

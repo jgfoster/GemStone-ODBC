@@ -1,0 +1,1007 @@
+#ifndef SHRPCSTATS_HT
+#define SHRPCSTATS_HT TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - shrpcstats.ht
+ *
+ * Purpose - Definition of all shared page cache statistics
+ *
+ * NOTICE - Customer Visible File - This file ships with the product tree.
+ *
+ * $Id: shrpcstats.ht 36107 2015-04-28 16:15:40Z otisa $
+ *
+ *========================================================================
+ */
+
+/*******  GemStone configuration files  *************************************/
+
+/*******  GemStone constants/types defined in this and other modules ********/
+
+/****************************************************************************/
+/*           ******* INSTRUCTIONS FOR ADDING NEW STATS ******
+
+  When adding stats you must edit 3 files:
+    1.  shrpcstats.ht - to add the definition to the appropriate type:
+        (ShrPcMonStatSType, ShrPcStnStatSType, ShrPcPgsvrStatSType, 
+         ShrPcGemStatSType, ShrPcCommonStatSType)
+    2.  statnames.hf - to include the statName in the ordered list of names.
+        The names MUST appear in the same order as in the type definitions.
+    3.  vsd/src/vsd.stats.tcl.template - the name used in stattype must be added to TWO places:
+          a)  statDocs 
+          b)  statDefinitions 
+        - see instructions in vsd.stats.tcl.template  for updating these.
+
+  !!! BE CAREFUL NOT TO MIX 32 and 64 BIT STATS !!!
+
+*****************************************************************************/
+
+/* no more includes. KEEP THIS LINE */
+
+#define SHRPC_SESSION_STATS_SIZE 48
+
+/*=========================================================================
+ * Cache Statistics definitions
+ *========================================================================
+ */
+#define SHRPC_PROC_NAME_SIZE  31
+
+// SHR_NUM_PAGE_KINDS deleted.  No longer needed with fix for 44959
+
+enum {
+  /* 0 */ SHRPC_MONITOR_IDX,
+  /* 1 */ SHRPC_STONE_IDX,
+  /* 2 */ SHRPC_PGSVR_IDX,
+  /* 3 */ SHRPC_GEM_IDX,
+  /* 4 */ SHRPC_STATMON_IDX,
+  /* 5 */ SHRPC_APP_IDX,
+  /* 6 */ SHRPC_PSC_IDX,
+  /* Add new elements before this line */
+  /* 7 */ SHRPC_SYSTEM_IDX
+
+};
+
+enum {
+  /* 0x01 */  SHRPC_MONITOR = (1 << SHRPC_MONITOR_IDX),
+  /* 0x02 */  SHRPC_STONE   = (1 << SHRPC_STONE_IDX),
+  /* 0x04 */  SHRPC_PGSVR   = (1 << SHRPC_PGSVR_IDX),
+  /* 0x08 */  SHRPC_GEM     = (1 << SHRPC_GEM_IDX),
+  /* 0x10 */  SHRPC_STATMON = (1 << SHRPC_STATMON_IDX),
+  /* 0x20 */  SHRPC_APP     = (1 << SHRPC_APP_IDX),
+  /* 0x40 */  SHRPC_PSC     = (1 << SHRPC_PSC_IDX), 
+  /* 0x80 */  SHRPC_SYSTEM  = (1 << SHRPC_SYSTEM_IDX), 
+  // used only by statmonitor
+  /* 0x7F */  SHRPC_ALL     = (SHRPC_MONITOR | SHRPC_STONE | SHRPC_PGSVR | \
+                               SHRPC_GEM | SHRPC_STATMON | SHRPC_APP | \
+                               SHRPC_SYSTEM | SHRPC_PSC)
+};
+
+
+static const char *shrpcProcKindToString(int kind) {
+  switch(kind) {
+    case SHRPC_MONITOR: return "Monitor";
+    case SHRPC_STONE:   return "Stone";
+    case SHRPC_PGSVR:   return "Pgsvr";
+    case SHRPC_GEM:     return "Gem";
+    case SHRPC_STATMON: return "Statmon";
+    case SHRPC_APP:     return "App";
+    case SHRPC_SYSTEM:  return "Host";
+    case SHRPC_PSC:     return "PersistentSharedCtr";
+  }
+  return "";
+}
+
+/* Accounts for processId and sessionId fields in ShrPcStatsSType */
+#define  NUM_EXTRA_STATS 2
+
+class ShrPcCommonStatSType;
+class ShrPcCommon64StatSType;
+class ShrPcMonStatSType;
+class ShrPcMonStat64SType;
+class ShrPcStnStatSType;
+class ShrPcStnStat64SType;
+class ShrPcPgsvrStatSType;
+class ShrPcPgsvrStat64SType;
+class ShrPcGemStatSType;
+class ShrPcGemStat64SType;
+class ShrPcStatsSType;
+class GcsiResultSType;
+
+/* ********************** ShrPcCommonStatSType ********************** */
+class ShrPcCommonStatSType {
+public:
+/*  1 */ unsigned int     localPageCacheMisses;
+/*  2 */ unsigned int     timeInWaitsForOtherReader;
+/*  3 */ unsigned int     waitsForOtherReader;
+/*  4 */ unsigned int     rdbfDiskReads; 
+/*  5 */ unsigned int     rdbfDiskWrites;
+/*  6 */ unsigned int     framesFromFreeList;
+/*  7 */ unsigned int     framesFromFindFree;
+/*  8 */   signed int     freeFrameLimit;
+/*  9 */ unsigned int     timeInFramesFromFindFree;
+/* 10 */ unsigned int     framesAddedToFreeList;
+/* 11 */ unsigned int     otPageReads;
+/* 12 */ unsigned int     dataPageReads;
+/* 13 */ unsigned int     bmPageReads;
+/* 14 */ unsigned int     miscPageReads;
+/* 15 */ unsigned int     extentFlushCount;
+/* 16 */   signed int     freeFrameCacheSize;
+/* 17 */ unsigned int     freeFrameCacheNumFrames;
+/* 18 */ unsigned int     rdbfTimeWaitingForIoMs;
+/* 19 */ unsigned int     rdbfMicroSecsPerIoOverallAvg;
+/* 20 */ unsigned int     rdbfMicroSecsPerIo10Avg;
+/* 21 */ unsigned int     rdbfMicroSecsPerIo100Avg;
+/* 22 */ unsigned int     rdbfPageIoCount;
+/* 23 */ unsigned int     CHeapSizeKB;
+/* 24 */ unsigned int     pinnedPrivatePagesCount;
+/* 25 */ unsigned int     freePceCacheEntries;
+/* 26 */ unsigned int     pcesRemovedFromFreeList;
+/* 27 */ unsigned int     pcesAddedToFreeList;  
+/* 28 */ unsigned int     cacheSlotIndex; // added to fix 39916
+/* 29 */ unsigned int     pagesAddedToCacheFromDisk;
+/* 30 */ unsigned int     pagesAddedToCacheFromPrimaryCache;
+/* 31 */ unsigned int     pagesAddedToCacheFromMidCache;
+/* 32 */ unsigned int     pagesAddedToCacheNewlyCreated;
+/* 33 */ unsigned int     commitRecordPageReads;
+/* 34 */ unsigned int     pinnedPagesCount;  // must be last!!
+
+  // ATTENTION: the number of stats must be EVEN so that ShrPcCommonStatSType can be
+  // 8-byte aligned without the compiler adding padding.  See bug 39916.
+
+
+  // implemented in shrpc_inline.hf
+  inline void updateOriginStatForPageAddedToCache(unsigned char origin);
+  inline void updatePageReadStats(unsigned char* pageHdrPtr, int numRead = 1);
+};
+
+#define COMMON_32_LAST_STAT pinnedPagesCount
+#define COMMON_STAT_COUNT_32 \
+	  (1 + offsetof(ShrPcCommonStatSType, COMMON_32_LAST_STAT) \
+                / sizeof(unsigned int))
+
+/* ********************** ShrPcCommon64StatSType ********************** */
+
+class ShrPcCommon64StatSType {
+public:
+/*  1 */ uint64_t    localPageCacheHits;
+/*  2*/  uint64_t    pageLocateCount; // must be last
+};
+
+#define COMMON_LAST_64_STAT pageLocateCount
+
+#define COMMON_STAT_COUNT_64 \
+  (1 + offsetof(ShrPcCommon64StatSType, COMMON_LAST_64_STAT) \
+                / sizeof(uint64_t))
+
+#define COMMON_STAT_COUNT_TOTAL (COMMON_STAT_COUNT_32 + COMMON_STAT_COUNT_64)
+
+/* ********************** ShrPcMonStatSType ********************** */
+
+// Must update updateFromCommonStats() in shrpccmn.c if you add
+// more stats to this list.  addStatsFrom() will take care of itself.
+
+class ShrPcMonStatSType 
+{
+ public:
+  unsigned int numberOfFreeFrames;
+  unsigned int gemsInCacheCount;
+  unsigned int localDirtyPageCount;
+  unsigned int globalDirtyPageCount;
+  unsigned int lastSleepTimeBetweenScans;
+  unsigned int lastSleepTimeWithinScan;
+  unsigned int numRecentActiveProcesses;
+  // 44959 - only include page kinds that may actually appear in the cache
+  unsigned int gem_REP_INVALID_PAGE_KIND;
+  unsigned int gem_REP_ROOT_PAGE;
+  unsigned int gem_REP_FRAGMENT_BM_PAGE;
+  unsigned int gem_REP_COMMIT_RECORD_PAGE;
+  unsigned int gem_REP_DATA_PAGE;
+  unsigned int gem_REP_OT_INTERNAL_PAGE;
+  unsigned int gem_REP_OT_LEAF_PAGE;
+  unsigned int gem_REP_BM_INTERNAL_PAGE;
+  unsigned int gem_REP_BM_LEAF_PAGE;
+  unsigned int gem_REP_COUNT_BAG_LEAF_PAGE;
+  unsigned int gem_REP_BITLIST_PAGE;
+  unsigned int gem_REP_COUNT_BAG_INTERIOR_PAGE;
+  unsigned int gem_REP_ROOT_PAGE_40;
+  unsigned int stn_REP_INVALID_PAGE_KIND;
+  unsigned int stn_REP_ROOT_PAGE;
+  unsigned int stn_REP_FRAGMENT_BM_PAGE;
+  unsigned int stn_REP_COMMIT_RECORD_PAGE;
+  unsigned int stn_REP_DATA_PAGE;
+  unsigned int stn_REP_OT_INTERNAL_PAGE;
+  unsigned int stn_REP_OT_LEAF_PAGE;
+  unsigned int stn_REP_BM_INTERNAL_PAGE;
+  unsigned int stn_REP_BM_LEAF_PAGE;
+  unsigned int stn_REP_COUNT_BAG_LEAF_PAGE;
+  unsigned int stn_REP_BITLIST_PAGE;
+  unsigned int stn_REP_COUNT_BAG_INTERIOR_PAGE;
+  unsigned int stn_REP_ROOT_PAGE_40;
+
+  unsigned int spinLockPageFrameSleepCount;
+  unsigned int spinLockHashTableSleepCount;
+  unsigned int spinLockFreeFrameSleepCount;
+  unsigned int spinLockFreePceSleepCount;
+  // spinLockSmcQSleepCount deleted
+  unsigned int spinLockOtherSleepCount;
+    signed int targetFreeFrameCount;
+  unsigned int pagesRemovedFromCacheCount;
+  unsigned int pagesNotRemovedFromCacheCount;
+  unsigned int pagesNotFoundInCacheCount;
+  unsigned int pagesRemovedDirtyFromCacheCount;
+  unsigned int spinLockNewSymSleepCount;
+  unsigned int pinnedTotalCount;
+  unsigned int pinnedSharedCount;
+  unsigned int pinnedDataPagesCount;     
+  unsigned int pinnedOtPagesCount;
+  unsigned int pageServersInCacheCount;
+  unsigned int frameCount;
+  unsigned int spinLockCount;
+  unsigned int numSharedCounters;
+  unsigned int slotsCrashedCount;
+  unsigned int totalOtPages;
+  unsigned int totalDataPages;
+  unsigned int totalCrPages;
+  unsigned int totalBitmapPages;
+  unsigned int totalOtherPages;
+  unsigned int freePceCount;
+  unsigned int totalFramesInFreeFrameCaches;
+  unsigned int totalPcesInFreePceCaches;
+  unsigned int totalProcsInCacheCount;
+  unsigned int slotsFreeCount;
+  unsigned int crashedSlotsInRecoveryCount;
+  unsigned int cleanSlotsInRecoveryCount;
+  unsigned int slotsTotalCount;
+  unsigned int rejectedProcsCount;
+  unsigned int cleanSlotsRecoveredCount;
+  unsigned int crashedSlotsRecoveredCount;
+  unsigned int mainThreadTimeRunningMs;
+  unsigned int crashedSlotThreadTimeRunningMs;
+  unsigned int cleanSlotThreadTimeRunningMs;
+  unsigned int statsThreadTimeRunningMs;
+  unsigned int procsWaitingForQueueLocks;
+  unsigned int cacheScanCount;
+  unsigned int pagesInCacheFromDisk;
+  unsigned int pagesInCacheFromPrimaryCache;
+  unsigned int pagesInCacheFromMidCache;
+  unsigned int pagesInCacheCreatedInLeafCache;
+  unsigned int pagesInCacheCreatedInPrimaryCache; 
+  unsigned int numProcsSleepingForLock;  // must be last, or
+  // update SHRPC_MON_LAST_32_STAT when you append this list!!
+
+  unsigned int *firstStat() { return &this->numberOfFreeFrames; }
+  static size_t elementSize() { return sizeof(int); }
+};
+
+#define SHRPC_MON_LAST_32_BIT_STAT numProcsSleepingForLock
+
+#define SHRPC_MON_ONLY_STAT_COUNT_32 \
+	  (1 + offsetof(ShrPcMonStatSType, SHRPC_MON_LAST_32_BIT_STAT) \
+                / sizeof(unsigned int))
+
+
+/* ********************** ShrPcMonStatSType ********************** */
+
+class ShrPcMonStat64SType {
+public:
+  uint64_t totalLocalPageCacheHits; // must be first
+  uint64_t totalLocalPageCacheMisses;
+  uint64_t totalWaitsForOtherReader;
+  uint64_t totalPageReads; 
+  uint64_t totalPageWrites;
+  uint64_t totalFramesFromFreeList;
+  uint64_t totalFramesFromFindFree;
+  uint64_t totalFramesAddedToFreeList;
+  uint64_t totalOtPageReads;
+  uint64_t totalDataPageReads;
+  uint64_t totalBmPageReads;
+  uint64_t totalMiscPageReads;
+  uint64_t totalPcesRemovedFromFreeList;
+  uint64_t totalCommitRecordPageReads;
+  uint64_t totalPagesAddedToCacheFromDisk;
+  uint64_t totalPagesAddedToCacheFromPrimaryCache;
+  uint64_t totalPagesAddedToCacheFromMidCache;
+  uint64_t totalPagesAddedToCacheNewlyCreated;
+  uint64_t totalPcesAddedToFreeList; // must be last
+
+  void setToZero() { memset(this, 0, sizeof(*this)); }
+
+  inline intptr_t sizeInInt64Words(void) {
+    return (intptr_t) (sizeof(*this) / sizeof(uint64_t));
+  }
+  
+  void updateFromCommonStats(ShrPcStatsSType *stats); // only called by monitor
+
+  void addStatsFrom(ShrPcMonStat64SType *arg);
+};
+
+#define SHRPC_MON_LAST_64_BIT_STAT totalPcesAddedToFreeList
+
+#define SHRPC_MON_ONLY_STAT_COUNT_64  \
+  (1 + offsetof(ShrPcMonStat64SType, SHRPC_MON_LAST_64_BIT_STAT) \
+	 / sizeof(uint64_t))
+
+#define SHRPC_MON_ONLY_STAT_COUNT \
+ (SHRPC_MON_ONLY_STAT_COUNT_32 + SHRPC_MON_ONLY_STAT_COUNT_64)
+
+#define  SHRPC_STAT_COUNT  (SHRPC_MON_ONLY_STAT_COUNT + COMMON_STAT_COUNT_TOTAL )
+
+#define  SHRPC_TOTAL_STAT_COUNT  (NUM_EXTRA_STATS + SHRPC_STAT_COUNT)
+
+// 32 bit monitor stats + common stats.  extra stats not included
+#define SHRPC_MON_AND_CMN_STAT_COUNT_32 (SHRPC_MON_ONLY_STAT_COUNT_32 +	\
+	  COMMON_STAT_COUNT_32 )
+
+// _all_ 32 bit stats
+#define  SHRPC_MON_TOTAL_STAT_COUNT_32 \
+     (NUM_EXTRA_STATS + SHRPC_MON_AND_CMN_STAT_COUNT_32)
+
+// _all_ 64 bit stats
+#define SHRPC_MON_TOTAL_STAT_COUNT_64 \
+  (COMMON_STAT_COUNT_64 + SHRPC_MON_ONLY_STAT_COUNT_64)
+
+/* ********************** ShrPcStnStatSType ********************** */
+
+// =====================================================
+  // Offsets used to access  stg->LockWaitQueues 
+  //
+  // The RcRetryQueue, Lock1WaitQueue, Lock2WaitQueue  
+  // allow sessions to wait for lock acquisition on a single
+  // object.  Each queue has one associated persistent object, assigned
+  //  by the first session to use that queue.
+  // Acquiring these locks is subject to the deadlock detection code
+  // in stndocall.c 
+enum {
+  RC_RETRY_WAIT_IDX = 0, // RcRetryQueue
+  OBJ_1_WAIT_IDX = 1,	 // Lock1WaitQueue
+  OBJ_N_WAIT_IDX = 10,	 // LockNWaitQueue
+  LOCK_REQ_IDX = 11,     // must be last, LockReqQueue - general lock requests 
+                         // sessions waiting for locks only because 
+                         // another session holds commit token.
+			
+  NUM_LOCK_WAIT_QUEUES = LOCK_REQ_IDX + 1 ,
+  NUM_OBJ_WAIT_QUEUES = LOCK_REQ_IDX - OBJ_1_WAIT_IDX  // not incl RC_RETRY
+};
+
+// =====================================================
+
+class ShrPcStnStatSType 
+{
+ public:
+  unsigned int     totalCommits;
+  unsigned int     numberOfCommitRecords;
+  unsigned int     logRecordsWritten;
+  unsigned int     logRecordIoCount;
+  unsigned int     checkpointCount;
+  unsigned int     numInCommitQueue;
+  unsigned int     numInNotifyQueue;
+  unsigned int     numInCacheStartQueue;
+  unsigned int     numInRunQueue;
+  unsigned int     numInSymbolCreateQueue;
+  unsigned int     numInPageWaitQueue;
+  unsigned int     numInLogWaitQueue;
+  unsigned int     numInLogHighQueue;
+  unsigned int     numInLogLowQueue;
+  unsigned int     numInRcRetryQueue;
+  unsigned int     numInObjWaitQueue[NUM_OBJ_WAIT_QUEUES];
+  unsigned int     numInLockReqQueue;
+  unsigned int     logLowQueueAdds;
+  unsigned int     logHighQueueAdds;
+  unsigned int     tempPagesDisposed;
+  unsigned int     persistentPagesDisposed;
+  unsigned int     pageDisposesDeferred;
+  unsigned int     freePages;
+  unsigned int     gcWsUnionSweepCount;
+  unsigned int     timeInPgsvrNetReads;
+  unsigned int     timeInPgsvrNetWrites;
+  unsigned int     gsMsgCount;
+  unsigned int     gsMsgSessionId;
+  unsigned int     gsMsgKind;
+  unsigned int     stnLoopState;
+  unsigned int     deferCkptCompleteCount;
+  unsigned int     totalAborts;
+  unsigned int     timeInStnGetLocks;
+  unsigned int     stnGetLocksCount;
+  unsigned int     totalNewObjsCommitted;
+  unsigned int     totalSessionsCount;
+    signed int     commitTokenSession;
+  unsigned int     timeInCommitRecordDisposal;
+  unsigned int     commitRecordDisposalState;
+  unsigned int     commitRecordsDisposedCount;
+  unsigned int     commitQueueSessionNotReadyCount;
+  unsigned int     commitQueueAddedToRunQueueCount;
+  unsigned int     commitQueueAddedToRunQueueSessionCount;
+    signed int     checkpointState;
+  unsigned int     stoneCommitState;
+    signed int     commitQueueThreshold;
+  unsigned int     commitRecordDisposalsDeferredCount;
+  unsigned int     stnLoopHibernateCount;
+  unsigned int     recoverTranlogFileId;
+  unsigned int     recoverTranlogBlockId;
+  unsigned int     recoverReclaimOopsWaitTime;
+  unsigned int     recoverFreeFrameWaitTime;
+  unsigned int     recoverReadThreadWaitTime;
+  unsigned int     recoverNumBufs;
+  unsigned int     recoverNumBufsInWorkQueue;
+  unsigned int     recoverNumBufsInFreeList;
+  unsigned int     recoverNumBufsForSessions;
+    signed int     recoverTimeLag;
+  unsigned int     oldestCrSession;
+  unsigned int     oldestCrSessNotInTrans;
+  unsigned int     gcVoteState;
+  unsigned int     waitingForSessionToVote;
+  unsigned int     tranlogFileId;
+  unsigned int     tranlogBlockId;
+  unsigned int     tranlogsFull;
+  unsigned int     logSenderFileId;
+  unsigned int     logSenderBlockId;
+  unsigned int     timePerformingCommit;
+  unsigned int     remoteSharedPageCacheCount;
+  unsigned int     oopsReturnedByGemsCount;
+  unsigned int     pagesReturnedByGemsCount;
+  unsigned int     pageMgrPagesReceivedFromStoneCount;
+  unsigned int     pageMgrRemoveFromCachesCount;
+  unsigned int     pageMgrRemoveFromCachesPageCount;
+  unsigned int     pageMgrPagesPendingRemovalRetryCount; //
+  unsigned int     pageMgrPagesRemovedFromCachesCount;
+  unsigned int     pageMgrPagesNotRemovedFromCachesCount; //
+  unsigned int     pageMgrRemovePagesFromCachesPollCount;
+  unsigned int     pageMgrTimeWaitingForCachePgsvrs;
+  unsigned int     pagesWaitingForRemovalInStoneCount;
+  unsigned int     timeInStonePageDisposal;
+  unsigned int     remoteCachesNeedServiceCount;
+  unsigned int     localCacheStalePcesRemovedCount;
+  unsigned int     localCacheAllocatedPceCount;
+  unsigned int     localCacheFreePceCount;
+  unsigned int     localCachePceCountLimit;
+  unsigned int     localCachePceReclaimCount;
+  unsigned int     localCacheValidPcesRemovedCount;
+  unsigned int     localCacheOverflowCount;
+  unsigned int     lastSmcQueueSize;
+  unsigned int     sessionWithGcLock;
+  unsigned int     numInNetWriteQueue;
+  unsigned int     epochGcCount;
+  unsigned int     commitsSinceLastEpoch;
+  unsigned int     numInMainInpQueue;
+  unsigned int     timeLastEpochGc;
+  unsigned int     epochForceGc;
+  unsigned int     bmCHeapPages;
+  unsigned int     maxVotingSessions;
+  unsigned int     numVotingSessions;
+  unsigned int     numInLostOtQueue;
+  unsigned int     stnMainWaitsForFreeAio;
+  unsigned int     aioNumEmptyBuffers;
+  unsigned int     aioNumBuffers;
+  unsigned int     numInPgsvrWaitQueue;
+  unsigned int     reposSizeMB;
+  unsigned int     numInLdiQueue;
+  unsigned int     totalGemFatalErrors;
+  unsigned int     totalSigAbortsSent;
+  unsigned int     totalLostOtsSent;
+  unsigned int     totalSessionsStopped;
+  unsigned int     totalSessionsTerminated;
+  unsigned int     ldiThreadOperations;
+  unsigned int     loginRequestsCount;
+  unsigned int     numInNetReadWorkList;
+  unsigned int     lastSessionIdStopped;
+  unsigned int     lastSessionIdTerminated;
+  unsigned int     lastSessionFatalError;
+  unsigned int     lastSessionSigAbort;
+  unsigned int     lastSessionLostOt;
+  unsigned int     stnLoopNoWorkThreshold;
+  unsigned int     stnLoopsSinceSleep;
+  unsigned int     stnLoopsNoWork;
+  unsigned int     stnTranQToRunQThreshold;
+  unsigned int     numCacheWarmers;
+  unsigned int     stnAioWaitsForWork;
+  unsigned int     stnAioWriteFailures;
+  unsigned int     stnAioCompletionFailures;
+  unsigned int     stnAioFsyncFailures;
+  unsigned int     netWriteThreadWakeups;
+  unsigned int     netWriteThreadSocketWrites;
+  unsigned int     pagemgrThreadWakeups;
+  unsigned int     pagemgrSleepState;
+  unsigned int     pagemgrSleepMs;
+  unsigned int     pagemgrPolls;
+  unsigned int     timerThreadWakeups;
+  unsigned int     remoteSharedPageCacheMax;
+  unsigned int     pagesWaitingForRemovalTemp;
+  unsigned int     pagesWaitingForRemovalPersist;
+  unsigned int     pagesWaitingForRemovalDeferred;
+  unsigned int     crPageLocateForDisposeCount;
+  unsigned int     tteFreePoolSize;
+  unsigned int     tteFreeCount;
+  unsigned int     tteCrPageFreePoolSize;
+  unsigned int     tteCrPageFreeCount;
+  unsigned int     stnAioWaitTotalTime; 
+  unsigned int     stnAioMainTimeInAioWrite;
+  unsigned int     stnCrBacklogThreshold;
+  unsigned int     epochLastDuration;
+  unsigned int     gcWsUnionSize;
+  unsigned int     stnAioFsyncCount;
+  unsigned int     stnAioTimeInFsyncMs;
+  unsigned int     stnAioWriteQueueSize; // NEW!!
+  unsigned int     stnAioWritesQueuedCount; // NEW!!
+  unsigned int     stnAioNumWriteThreads; // NEW
+  unsigned int     stnAioWriteQueueHighWaterSize;
+  unsigned int     stnRemoteCachePgsvrTimeout; // 40760
+  unsigned int     pageMgrPrintTimeoutThreshold;
+  unsigned int     pageMgrCompressionEnabled;
+  unsigned int     stnPageMgrRemoveMinPages;
+  unsigned int     stnPageMgrRemoveMaxPages;
+  unsigned int     pageMgrPageRemovalRetryCount;
+  unsigned int     gcLockKind;
+  unsigned int     stnAioWriteThreadsIdle;
+  unsigned int     sessionPerformingBackup;
+  unsigned int     lostOtDeferLastSession;
+  unsigned int     lostOtDeferLastReason;
+  unsigned int     lostOtDeferCount;
+  unsigned int     readLocksSize;  // fix 41969
+  unsigned int     writeLocksSize;
+  unsigned int     maxUserSessions;
+  unsigned int     pageManagerStarvedCount;
+  unsigned int     pageManagerMaxWaitTimeMs;
+  unsigned int     timeInGetPagesForPageMgr;
+  unsigned int     timeInProcessPagesFromPageMgr;
+  unsigned int     forcedDisconnects;
+  unsigned int     numInLoginLogQ; // 43335
+  unsigned int     loginLogThreadOperations; // 43335
+  unsigned int     loginLogFlushes; // 43335
+  unsigned int     responsesSentEarly; // 44172
+  unsigned int     responsesSentNormal; // 44172
+  unsigned int     stnSmcSpinLockCount; // 44172
+  unsigned int     stnMessagesNoWakeUpCount;
+  unsigned int     stnMessagesNeedWakeUpCount;
+  unsigned int     commitRecordReleases;
+  unsigned int     lastCommitRecordReleaseReasonCode;
+  unsigned int     lastCommitRecordReleaseSessionId;
+  unsigned int     lastSigTermGemSessionId;
+  unsigned int     lastSigTermPageServerSessionId;
+  unsigned int     totalSigTermsSentToGems;
+  unsigned int     totalSigTermsSentToPageServers;
+  unsigned int     lastSigTermGemPid;
+  unsigned int     lastSigTermPgsvrPid;
+  unsigned int     freePagesPoolSize;
+  unsigned int     totalExtentGrows;
+  unsigned int     timeInExtentGrow; // in ms
+  unsigned int     avgTimePerExtentGrow; // in microsecs
+  unsigned int     remoteMidLevelCacheCount; //44934
+  unsigned int     localCacheFreeFrameCount;
+
+  int offsetIsValid(size_t offset) {
+    return offset <= sizeof(*this) - sizeof(uint64_t);
+  }
+
+
+  unsigned int *firstStat() { return &this->totalCommits; }
+  static size_t elementSize() { return sizeof(int); }
+
+};
+
+#define STN_LAST_32_BIT_STAT localCacheFreeFrameCount
+
+#define STN_ONLY_STAT_COUNT_32 \
+	  (1 + offsetof(ShrPcStnStatSType, STN_LAST_32_BIT_STAT) \
+                / sizeof(unsigned int))
+
+class ShrPcStnStat64SType {
+  public:
+  uint64_t     globalSessionStats[SHRPC_SESSION_STATS_SIZE];
+  uint64_t     backupHighWaterPage;
+  uint64_t     gcHighWaterPage;
+  uint64_t     reclaimcount;
+  uint64_t     reclaimedPagesCount;
+  uint64_t     pagesNeedReclaimingSize;
+  uint64_t     possibleDeadObjs;
+  uint64_t     possibleDeadSymbols;
+  uint64_t     reclaimedSymbols;
+  uint64_t     voteNotDeadObjs;
+  uint64_t     deadObjsReclaimedCount; 
+  uint64_t     deadNotReclaimedObjs;
+  uint64_t     epochNewObjs;
+  uint64_t     epochScannedObjs;
+  uint64_t     epochPossibleDeadObjs;
+  uint64_t     freeOopsCount;
+  uint64_t     stnLoopCount;
+  uint64_t     oopNumberHighWaterMark;   // Must update STN_LAST_64_BIT_STAT if you add more stats
+
+  inline uint64_t minHighWaterPage(void) {
+    return gcHighWaterPage < backupHighWaterPage ? 
+      gcHighWaterPage : backupHighWaterPage;
+  }
+};
+
+#define STN_LAST_64_BIT_STAT oopNumberHighWaterMark
+
+#define STN_ONLY_STAT_COUNT_64  \
+  (1 + offsetof(ShrPcStnStat64SType, STN_LAST_64_BIT_STAT) / sizeof(uint64_t))
+
+#define STN_ONLY_STAT_COUNT \
+  (STN_ONLY_STAT_COUNT_32 + STN_ONLY_STAT_COUNT_64)
+
+#define STN_STAT_COUNT (STN_ONLY_STAT_COUNT + COMMON_STAT_COUNT_TOTAL)
+
+// Total stats to write for each type, used by statmonitor
+#define  STN_TOTAL_STAT_COUNT    (NUM_EXTRA_STATS + STN_STAT_COUNT)
+
+#define STN_AND_CMN_STAT_COUNT_32 \
+  (STN_ONLY_STAT_COUNT_32 + COMMON_STAT_COUNT_32)
+
+// _all_ 32 bit stats
+#define STN_TOTAL_STAT_COUNT_32 \
+   (NUM_EXTRA_STATS + STN_AND_CMN_STAT_COUNT_32)
+
+// _all_ 64 bit stats
+#define STN_TOTAL_STAT_COUNT_64 \
+  COMMON_STAT_COUNT_64 + STN_ONLY_STAT_COUNT_64
+
+/* ********************** ShrPcPgsvrStatSType ********************** */
+
+class ShrPcPgsvrStatSType {
+public:
+  unsigned int     aioDirtyCount;
+  unsigned int     aioCkptCount;
+  // asyncWritesInProgress deleted
+  unsigned int     clientPageReads;
+  unsigned int     clientPageWrites;
+  unsigned int     dirtyPageSweepCount;
+  unsigned int     aioRateLimit;
+  unsigned int     aioRateMax;
+  unsigned int     targetPercentDirty;
+  unsigned int     nextSleepTime;
+    signed int     asyncFlushesInProgress;
+  unsigned int     clientPid; /*26936*/
+  unsigned int     preemptedDataPages;
+  unsigned int     preemptedObjectTablePages;
+  unsigned int     preemptedBitmapPages;
+  unsigned int     preemptedCommitRecordPages;
+  unsigned int     preemptedOtherPages;
+  unsigned int     clockHandFrameId;
+  unsigned int     timePerformingReadIo;
+  unsigned int     postCheckpointPages;
+  unsigned int     clientSigAbortsSent;
+  unsigned int     clientLostOtsSent;
+  unsigned int     pgsvrCheckpointState;
+  unsigned int     aioWriteFailures;
+  unsigned int     timeSleepingMs;
+  unsigned int     lastCommandFromClient;
+  unsigned int     messagesToStone;
+  unsigned int     messageKindToStone;
+  unsigned int     timeWaitingForStone;
+  unsigned int     clientAbortInProgress; // 41014
+  unsigned int     clientAborts;
+  unsigned int     clientCommits;
+  unsigned int     compressionTimeReal;
+  unsigned int     compressionTimeCpu;
+  unsigned int     decompressionTimeReal;
+  unsigned int     decompressionTimeCpu;
+  unsigned int     compressCount;
+  unsigned int     decompressCount;
+  unsigned int     compressionKbIn;
+  unsigned int     compressionKbOut;
+  unsigned int     decompressionKbIn;
+  unsigned int     decompressionKbOut;
+  
+  // must be the last stat!
+  unsigned int     timePerformingReadRequests;
+
+};
+
+#define PGSVR_LAST_STAT timePerformingReadRequests
+
+#define PGSVR_ONLY_STAT_COUNT_32 \
+	 (1 + offsetof(ShrPcPgsvrStatSType, PGSVR_LAST_STAT) \
+               / sizeof(int))
+
+// No 64 bit stats yet
+class ShrPcPgsvrStat64SType {
+public:
+};
+
+// No 64 bit stats yet
+#define PGSVR_ONLY_STAT_COUNT_64 0
+
+#define PGSVR_ONLY_STAT_COUNT \
+  (PGSVR_ONLY_STAT_COUNT_32 + PGSVR_ONLY_STAT_COUNT_64)
+
+#define PGSVR_STAT_COUNT \
+  (PGSVR_ONLY_STAT_COUNT + COMMON_STAT_COUNT_TOTAL)
+
+#define  PGSVR_TOTAL_STAT_COUNT_64 \
+  (PGSVR_ONLY_STAT_COUNT_64 + COMMON_STAT_COUNT_64)
+
+#define  PGSVR_TOTAL_STAT_COUNT  \
+  (NUM_EXTRA_STATS + PGSVR_STAT_COUNT)
+
+// 32 bit pgsvr stats + common stats.  extra stats not included
+#define PGSVR_AND_CMN_STAT_COUNT_32 \
+  (PGSVR_ONLY_STAT_COUNT_32 + COMMON_STAT_COUNT_32)
+
+// _all_ 32 bit stats
+#define  PGSVR_TOTAL_STAT_COUNT_32 \
+     (NUM_EXTRA_STATS + PGSVR_AND_CMN_STAT_COUNT_32)
+
+// _all_ 64 bit stats
+#define PGSVR_TOTAL_64_STAT_COUNT \
+  (COMMON_STAT_COUNT_64 + PGSVR_ONLY_STAT_COUNT_64)
+
+/* ********************** ShrPcGemStatSType ********************** */
+class ShrPcGemStatSType 
+{
+ public:
+  unsigned int     commitCount;
+  unsigned int     failedCommitCount;
+  unsigned int     abortCount;
+  unsigned int     objsCommitted;
+  unsigned int     newObjsCommitted;
+  unsigned int     objsCommittedNotLogged;
+  unsigned int     newObjsCommittedNotLogged;
+  unsigned int     objectsRead;
+  unsigned int     classesRead;
+  unsigned int     methodsRead;
+  unsigned int     objectsRefreshed;
+  unsigned int     numberOfScavenges;
+  unsigned int     timeInScavenge;
+  unsigned int     numberOfMarkSweeps;  
+  unsigned int     timeInMarkSweep;
+  unsigned int     numRefsStubbedMarkSweep;
+  unsigned int     numRefsStubbedScavenge;
+  unsigned int     numSoftRefsCleared;
+  unsigned int     numLiveSoftRefs;
+  unsigned int     numNonNilSoftRefs;
+  unsigned int     numEphemerons;
+  unsigned int     totEphemeronsFired;
+  unsigned int     codeGenGcCount;
+  unsigned int     pomGenScavCount;
+  unsigned int     scavengeOverflows;
+  unsigned int     codeCacheSizeBytes;
+  unsigned int     newGenSizeBytes;
+  unsigned int     oldGenSizeBytes;
+  unsigned int     pomGenSizeBytes;
+  unsigned int     permGenSizeBytes;
+  unsigned int     meSpaceUsedBytes;
+  unsigned int     meSpaceAllocatedBytes;
+  unsigned int     objectMemoryGrowCount;
+  unsigned int     workingSetSize;
+  unsigned int     exportedSetSize; 
+  unsigned int     exportedSetSizePinnedInMemory;
+  unsigned int     trackedSetSize; 
+  unsigned int     dirtyListSize;
+  unsigned int     timeWaitingForCommit;
+  unsigned int     timeProcessingCommit;
+  unsigned int     timeStoneCommit;
+  unsigned int     messagesToStn;
+  unsigned int     newSymbolRequests;
+  unsigned int     timeWaitingForSymbols;   
+  unsigned int     newSymbolsCount;
+  unsigned int     omBytesFlushed;
+  unsigned int     gemFreePages;
+  unsigned int     voteNotDead;
+    signed int     transLevel;
+  unsigned int     timeInPgsvrNetReads;
+  unsigned int     timeInPgsvrNetWrites;
+  unsigned int     shadowedPagesCount;
+  unsigned int     rcConflictCount;
+  unsigned int     commitRetryFailureCount;
+  unsigned int     pageReadsWaitingForCommit;
+  unsigned int     pageReadsProcessingCommit;
+  unsigned int     pageReadsStoneCommit;
+  unsigned int     messagesToStnWaitingForCommit;
+  unsigned int     messagesToStnProcessingCommit;
+  unsigned int     messagesToStnStoneCommit;
+  unsigned int     messageKindToStone;
+  unsigned int     timeWaitingForStone;
+  unsigned int     updateUnionsCommitCount;
+  unsigned int     timeInUpdateUnionsCommit;
+  unsigned int     rebuildScavPagesForCommitCount;
+  unsigned int     crReadAbort;
+  unsigned int     crReadCommitWithToken;
+  unsigned int     crReadCommitBeforeCommitQueue;
+  unsigned int     crReadCommitInCommitQueue;
+  unsigned int     sigAbortsSent;
+  unsigned int     sigAbortsReceived;
+  unsigned int     lostOtsSent;
+  unsigned int     lostOtsReceived;
+  unsigned int     gemHasCommitToken;
+  unsigned int     localCacheStalePcesRemovedCount;
+  unsigned int     localCacheAllocatedPceCount;
+  unsigned int     localCacheFreePceCount;
+  unsigned int     localCachePceCountLimit;
+  unsigned int     localCachePceReclaimCount;
+  unsigned int     localCacheValidPcesRemovedCount;
+  unsigned int     localCacheOverflowCount;
+  unsigned int     localCacheFreeFrameCount;
+  unsigned int     tempObjSpacePercentUsed;
+  unsigned int     gciRpcCommandsServiced;
+  unsigned int     persistentPagesCommittedCount;
+  unsigned int     sleepDuringDisposeTempPageCount;
+  unsigned int     bmCHeapPages;
+  unsigned int     depMapKeysChanged;
+  unsigned int     gciPhysBytesSent;
+  unsigned int     gciPhysBytesRcvd;
+  unsigned int     gciBytesSent;
+  unsigned int     gciBytesRcvd;
+  // sessionId deleted
+  unsigned int     tranlogRecordsWritten;
+  unsigned int     tranlogKBytesWritten; 
+  unsigned int     tranlogRecordKind;
+  unsigned int     timeInUserActions;
+  unsigned int     gciRpcLastCommandServiced;
+  unsigned int     gciRpcTimeInLastCommand;
+  unsigned int     gciRpcTimeInClientRequests;
+  unsigned int     permGenObjsChanged; // Next 5 stats for 39565
+  unsigned int     permGenObjsChangedTotal;
+  unsigned int     workingSetObjsChanged;
+  unsigned int     workingSetObjsChangedTotal;
+  unsigned int     workingSetClearedCount;
+  unsigned int     primitiveNumber;
+  unsigned int     gcState;
+  unsigned int     voteOnDeadCount;
+  unsigned int     permGenFullCount;
+  unsigned int     codeGenFullCount;
+  unsigned int     oldGenFullCount;
+  unsigned int     lastMarkSweepReasonCode;
+  unsigned int     lastScavengeReasonCode;
+  unsigned int     scavsPromToMkSwCount;
+  unsigned int     clientPid;   // 40713
+  unsigned int     gemTempObjSizeKb;
+  // warning - _mtStat: primitatives dependent on order of these stats.
+  unsigned int     mtMaxThreads; // set by method that starts operation
+  unsigned int     mtThreadsLimit; // set by any session to limit activeThreads
+  unsigned int     mtPercentCpuActiveLimit; // set by any session to limit activeThreads 
+  unsigned int     mtActiveThreads; // number of active threads doing work
+  //  end warning  _mtStat:
+  unsigned int     mlPolyCacheFullCount; // private build only with OmSendCounts::enabled==1
+  unsigned int     mlClearAllCount;      
+  unsigned int     mlLuCacheLargeCount; // private build only with OmSendCounts::enabled==1
+  unsigned int     mlLuCacheGrowCount;  // private build only with OmSendCounts::enabled==1
+  unsigned int     mlLuCacheResetCount; // private build only with OmSendCounts::enabled==1
+  unsigned int     abortInProgress; // 41014
+  unsigned int     lastErrorNumber;
+  unsigned int     continueTransactionCount;
+  unsigned int     readLocksSize;  // fix 41969
+  unsigned int     writeLocksSize;
+  unsigned int     afterLogoutState;  // see code in stnloop.c for bits definitions
+  // new 32 bit stats go   * * *   A B O V E * * *   this line
+  unsigned int     gciRpcKeepAlivePacketCount;
+  // gciRpcKeepAlivePacketCount must update GEM_LAST_32_BIT_STAT if you append this list!!
+};
+
+#define GEM_LAST_32_BIT_STAT gciRpcKeepAlivePacketCount
+
+#define GEM_ONLY_STAT_COUNT_32 \
+   (1 + offsetof(ShrPcGemStatSType, GEM_LAST_32_BIT_STAT) \
+      / sizeof(unsigned int))
+
+class ShrPcGemStat64SType 
+{
+ public:
+  uint64_t objectsReadInBytes;
+  uint64_t mlPolyCacheCreateCount;  // private build only with OmSendCounts::enabled==1
+  uint64_t mlPolyCacheGrowCount;  // private build only with OmSendCounts::enabled==1
+  uint64_t mlFullLookupCount;  // private build only with OmSendCounts::enabled==1
+  uint64_t env1sendCacheSerialNum;  // updated on each scavenge
+  uint64_t lookupCacheSerialNum;  // updated on each scavenge
+  uint64_t sessionStats[SHRPC_SESSION_STATS_SIZE];
+  uint64_t progressCount;
+  uint64_t indexProgressCount; // 41278
+  // must be last!!!
+
+  inline void setProgressObjs(uint64_t v) { progressCount =  v; }
+};
+
+#define GEM_LAST_64_BIT_STAT indexProgressCount
+
+#define GEM_ONLY_STAT_COUNT_64 \
+  (1 + offsetof(ShrPcGemStat64SType, GEM_LAST_64_BIT_STAT) / sizeof(uint64_t))
+
+#define GEM_ONLY_STAT_COUNT (GEM_ONLY_STAT_COUNT_32 + GEM_ONLY_STAT_COUNT_64)
+
+
+#define  GEM_STAT_COUNT (GEM_ONLY_STAT_COUNT + COMMON_STAT_COUNT_TOTAL)
+
+// Total stats to write for each type, used by statmonitor
+#define  GEM_TOTAL_STAT_COUNT    (NUM_EXTRA_STATS + GEM_STAT_COUNT)
+
+
+// cmn and gem 32 bit stats
+#define  GEM_AND_CMN_STAT_COUNT_32 (GEM_ONLY_STAT_COUNT_32 \
+	  + COMMON_STAT_COUNT_32 )
+
+// total 32 bit stats to write for gem
+#define  GEM_TOTAL_STAT_COUNT_32 \
+  (NUM_EXTRA_STATS + GEM_AND_CMN_STAT_COUNT_32)
+
+// _all_ 64 bit stats
+#define GEM_TOTAL_STAT_COUNT_64 \
+  (COMMON_STAT_COUNT_64 + GEM_ONLY_STAT_COUNT_64)
+
+union ShrPcStatUnion {
+  ShrPcMonStatSType monitor;
+  ShrPcPgsvrStatSType pgsvr;
+  ShrPcStnStatSType stone;
+  ShrPcGemStatSType gem;
+};
+
+union ShrPcStat64Union {
+  ShrPcMonStat64SType   monitor64;
+  ShrPcPgsvrStat64SType pgsvr64;
+  ShrPcStnStat64SType   stone64;
+  ShrPcGemStat64SType   gem64;
+};
+
+#if !defined(GLOBAL_HT)
+enum { INVALID_PID = -1 };
+enum { REP_INVALID_SESSION_ID = -1};
+typedef int BoolType;
+#endif
+
+class ShrPcStatsSType {
+public:
+  signed int  processId;  // must be first  field, 
+  signed int  sessionId;  // must be second field, 
+  // else fix the next line and NUM_EXTRA_STATS
+
+#define  SHR_PC_STATS_LAST_STAT sessionId
+             
+  ShrPcCommonStatSType   cmn; // 32 bit only
+  union ShrPcStatUnion   u;  // 32 bit only
+  uintptr_t              spaceWaster; // forces 8 byte alignment
+  ShrPcCommon64StatSType cmn64; // 64 bit only
+  union ShrPcStat64Union u64;   // 64 bit only
+
+  uint* firstStat() { return (uint*)&this->processId; }
+  uint64_t* first64Stat() { return (uint64_t *) &this->cmn64; }
+  ShrPcGemStatSType* gemStats() { return &this->u.gem; }
+  ShrPcGemStat64SType* gemStats64() { return &this->u64.gem64; }
+
+  void initialize() {
+    processId = INVALID_PID;
+    sessionId = REP_INVALID_SESSION_ID;	  // fix 40932
+    char *rest = (char*)&SHR_PC_STATS_LAST_STAT + sizeof(SHR_PC_STATS_LAST_STAT);
+    size_t restSize =  sizeof(*this) - (rest - (char*)this);
+    memset(rest, 0, restSize);
+  }
+
+  int byteOffsetForMonitorStatIndex(int index);
+  int byteOffsetForStoneStatIndex(int index);
+  int byteOffsetForGemStatIndex(int index);
+  int64_t statForOffset(int offsetInBytes);
+  intptr_t statAddrForOffset(int offsetInBytes, BoolType *is64Bit);
+};
+
+
+// These macros compute the offset for the given stat within the ShrPcStatsSType
+// structure.
+#define OFFSET_FOR_STAT_32(_kind, __name) \
+  (offsetof(_kind, __name) + offsetof(ShrPcStatsSType, u))
+
+#define OFFSET_FOR_STN_STAT_32(_name) OFFSET_FOR_STAT_32(ShrPcStnStatSType, _name)
+
+#define OFFSET_FOR_MON_STAT_32(_name) OFFSET_FOR_STAT_32(ShrPcMonStatSType, _name)
+
+#define OFFSET_FOR_GEM_STAT_32(_name) OFFSET_FOR_STAT_32(ShrPcGemStatSType, _name)
+
+
+#define OFFSET_FOR_STAT_64(_kind, __name) \
+  (offsetof(_kind, __name) + offsetof(ShrPcStatsSType, u64))
+
+#define OFFSET_FOR_STN_STAT_64(_name) OFFSET_FOR_STAT_64(ShrPcStnStat64SType, _name)
+
+#define OFFSET_FOR_MON_STAT_64(_name) OFFSET_FOR_STAT_64(ShrPcMonStat64SType, _name)
+
+#define OFFSET_FOR_GEM_STAT_64(_name) OFFSET_FOR_STAT_64(ShrPcGemStat64SType, _name)
+
+
+class GcsiResultSType {
+public:
+  ShrPcStatsSType   stats; // 8 byte aligned
+  char              vsdName[SHRPC_PROC_NAME_SIZE + 1]; // 32 bytes
+  unsigned int      statType; // 4 bytes
+  unsigned int      space_waster; // 4 bytes
+};
+
+
+
+#endif /* SHRPCSTATS_HT */
+

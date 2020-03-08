@@ -1,0 +1,85 @@
+#ifndef GCISTRING_HF
+#define GCISTRING_HF TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - gcistring.hf
+ *
+ * Description - inline implementations of strlcpy, etc 
+ *
+ * $Id: gcistring.hf 36453 2015-06-01 16:00:32Z otisa $
+ *
+ *========================================================================
+ */
+#include "flag.ht"
+
+#include <stdio.h>
+
+#if (defined(FLG_MSWIN32) || defined(FLG_HPUX_UNIX) || defined(FLG_AIX_UNIX)) || defined(FLG_LINUX_UNIX)
+
+#if !defined(FLG_ANDROID_UNIX) // android has these string functions
+
+#include <sys/types.h>
+#include <string.h>
+
+/* these platforms don't have strlcpy and strlcat, so implement here */
+
+static size_t strlcpy(char *dst, const char *src, size_t siz) {
+  char *d = dst;
+  const char *s = src;
+  size_t n = siz;
+  /* Copy as many bytes as will fit */
+  if (n != 0 && --n != 0) {
+    do {
+      if ((*d++ = *s++) == 0)
+        break;
+    } while (--n != 0);
+  }
+  /* Not enough room in dst, add NUL and traverse rest of src */
+  if (n == 0) {
+    if (siz != 0)
+      *d = '\0'; /* NUL-terminate dst */
+    while (*s++);
+  }
+  return(s - src - 1); /* count does not include NUL */
+}
+
+static size_t strlcat(char *dst, const char *src, size_t siz) {
+  char *d = dst;
+  const char *s = src;
+  size_t n = siz;
+  size_t dlen;
+  /* Find the end of dst and adjust bytes left but don't go past end */
+  while (n-- != 0 && *d != '\0')
+    d++;
+  dlen = d - dst;
+  n = siz - dlen;
+  if (n == 0)
+    return(dlen + strlen(s));
+  while (*s != '\0') {
+    if (n != 1) {
+      *d++ = *s;
+      n--;
+    }
+    s++;
+  }
+  *d = '\0';
+  return(dlen + (s - src)); /* count does not include NUL */
+}
+#endif
+#endif
+
+static inline int GciAll7Bit_(const char* str, size_t len)
+{
+  // Returns 1 if contents of str are all characters <= 127,
+  // returns 0 otherwise.
+
+  for (size_t j = 0; j < len; j++) {
+    unsigned char ch = str[j];
+    if (ch >= 128)
+      return 0;
+  }
+  return 1;
+}
+
+#endif

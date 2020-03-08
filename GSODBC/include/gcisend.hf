@@ -1,0 +1,165 @@
+#ifndef GCISEND_HF
+#define GCISEND_HF TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - gcisend.hf
+ *
+ * Description - inline implementations of GciSendMsg 
+ *
+ * $Id: gcisend.hf 32752 2014-02-28 22:11:10Z stever $
+ *
+ *========================================================================
+ */
+#include "gcistring.hf"
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+			const char* selector)
+{
+  OopType arg = OOP_NIL;
+  return GciPerform_(receiver, selector, &arg, 0, 0); 
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+				const char* keyword1, OopType arg1)
+{
+  return GciPerform_(receiver, keyword1, &arg1, 1, 0); 
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+	const char* keyword1, OopType arg1,
+	const char* keyword2, OopType arg2)
+{
+  char selector[GCI_MAX_SYMBOL_SIZE + 1];
+  size_t len = strlcpy(selector, keyword1, sizeof(selector));
+  strlcpy(selector + len, keyword2, sizeof(selector) - len);
+
+  OopType args[2];
+  args[0] = arg1;
+  args[1] = arg2;
+
+  return GciPerform_(receiver, selector, args, 2, 0);
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+	const char* keyword1, OopType arg1,
+	const char* keyword2, OopType arg2,
+	const char* keyword3, OopType arg3)
+{
+  char selector[GCI_MAX_SYMBOL_SIZE + 1];
+  size_t len = strlcpy(selector, keyword1, sizeof(selector));
+  len += strlcpy(selector + len, keyword2, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword3, sizeof(selector) - len);
+
+  OopType args[3];
+  args[0] = arg1;
+  args[1] = arg2;
+  args[2] = arg3;
+
+  return GciPerform_(receiver, selector, args, 3, 0);
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+	const char* keyword1, OopType arg1,
+	const char* keyword2, OopType arg2,
+	const char* keyword3, OopType arg3,
+	const char* keyword4, OopType arg4)
+{
+  char selector[GCI_MAX_SYMBOL_SIZE + 1];
+  size_t len = strlcpy(selector, keyword1, sizeof(selector));
+  len += strlcpy(selector + len, keyword2, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword3, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword4, sizeof(selector) - len);
+
+  OopType args[4];
+  args[0] = arg1;
+  args[1] = arg2;
+  args[2] = arg3;
+  args[3] = arg4;
+
+  return GciPerform_(receiver, selector, args, 4, 0);
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+	const char* keyword1, OopType arg1,
+	const char* keyword2, OopType arg2,
+	const char* keyword3, OopType arg3,
+	const char* keyword4, OopType arg4,
+	const char* keyword5, OopType arg5)
+{
+  char selector[GCI_MAX_SYMBOL_SIZE + 1];
+  size_t len = strlcpy(selector, keyword1, sizeof(selector));
+  len += strlcpy(selector + len, keyword2, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword3, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword4, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword5, sizeof(selector) - len);
+
+  OopType args[5];
+  args[0] = arg1;
+  args[1] = arg2;
+  args[2] = arg3;
+  args[3] = arg4;
+  args[4] = arg5;
+
+  return GciPerform_(receiver, selector, args, 5, 0);
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+	const char* keyword1, OopType arg1,
+	const char* keyword2, OopType arg2,
+	const char* keyword3, OopType arg3,
+	const char* keyword4, OopType arg4,
+	const char* keyword5, OopType arg5,
+	const char* keyword6, OopType arg6)
+{
+  char selector[GCI_MAX_SYMBOL_SIZE + 1];
+  size_t len = strlcpy(selector, keyword1, sizeof(selector));
+  len += strlcpy(selector + len, keyword2, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword3, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword4, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword5, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword6, sizeof(selector) - len);
+
+  OopType args[6];
+  args[0] = arg1;
+  args[1] = arg2;
+  args[2] = arg3;
+  args[3] = arg4;
+  args[4] = arg5;
+  args[5] = arg6;
+
+  return GciPerform_(receiver, selector, args, 6, 0);
+}
+
+static inline OopType GciSendMsg(OopType receiver, int numMsgPartsUnused,
+	const char* keyword1, OopType arg1,
+	const char* keyword2, OopType arg2,
+	const char* keyword3, OopType arg3,
+	const char* keyword4, OopType arg4,
+	const char* keyword5, OopType arg5,
+	const char* keyword6, OopType arg6,
+	const char* keyword7, OopType arg7)
+{
+  char selector[GCI_MAX_SYMBOL_SIZE + 1];
+  size_t len = strlcpy(selector, keyword1, sizeof(selector));
+  len += strlcpy(selector + len, keyword2, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword3, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword4, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword5, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword6, sizeof(selector) - len);
+  len += strlcpy(selector + len, keyword7, sizeof(selector) - len);
+
+  OopType args[7];
+  args[0] = arg1;
+  args[1] = arg2;
+  args[2] = arg3;
+  args[3] = arg4;
+  args[4] = arg5;
+  args[5] = arg6;
+  args[6] = arg7;
+
+  return GciPerform_(receiver, selector, args, 7, 0);
+}
+
+#endif
+

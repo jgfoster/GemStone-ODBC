@@ -1,0 +1,129 @@
+#if !defined(GCILEGACY_HT)
+#define GCILEGACY_HT 1
+/*========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ *  Name - gcilegacy.ht
+ *========================================================================
+ */
+enum {
+  UAFLAG_SESSION = 0x01, /* If set then it is a session user action */
+  UAFLAG_SYSTEM  = 0x02, /* If set then it is a system user action
+			  * This attribute is used for builtin user
+			  * actions so that the do not show up in
+			  * a System|userActionReport.
+			  */
+  UAFLAG_GSFILE =  0x04  /* a user action for class GsFile*/
+};
+
+typedef OopType (*GciUserActionFType)(void);
+
+class GciUserActionSType {
+ public:
+  char               userActionName[GCI_MAX_ACTION_NAME+1];  /* function name */
+  int               userActionNumArgs; 
+  GciUserActionFType userAction;     /* pointer to funct */
+  unsigned int      userActionFlags; /* See the UAFLAG_* constants */
+} ;
+
+typedef void* GciOopMapEntryType;
+typedef void* GciOopMapType;
+
+typedef struct {
+  jmp_buf buf;
+  } GciJmpBufSType;
+
+extern "C" {
+
+typedef void GciLogFuncType(const char str[]);
+
+typedef void GciHelpWriteLineFType(const char *str);
+
+typedef void GciHelpReadLineFType(const char* prompt, char * str, int maxSize);
+
+}
+
+/* The following macros are for compatibility with the 4.1 gcifloat.hf */
+#define GCI_plusInfinity  GciFloatPlusInfinityVal()
+#define GCI_minusInfinity GciFloatMinusInfinityVal()
+#define GCI_plusQuietNan  GciFloatPlusQuietNanVal()
+#define GCI_minusQuietNan GciFloatMinusQuietNanVal()
+#define GCI_plusSignalingNan  GciFloatPlusSignalingNanVal()
+#define GCI_minusSignalingNan GciFloatMinusSignalingNanVal()
+
+class CLS_EXPORT GciObjInfoSType 
+{
+ public:
+  OopType       objId;                  /* OOP of the obj */
+  OopType       objClass;                  /* OOP of the class of the obj */
+  int64         objSize;                /* obj's total size, in bytes or OOPs*/
+  int           namedSize;              /* num of named inst vars in the obj */
+  unsigned short objectSecurityPolicyId;  // previously named segmentId
+  unsigned short  _bits;
+  enum {  // definitions of bits within _bits
+         implem_mask    = GC_IMPLEMENTATION_MASK, // 0x03
+         indexable_mask = GC_INDEXABLE_MASK,      // 0x04
+         invariant_mask = GC_INVARIANT_MASK,      // 0x08
+         partial_mask   = 0x10,                
+         overlay_mask   = 0x20,
+         is_placeholder = 0x40 , // object is place holder for unsatisfied forward reference
+        swiz_kind_mask = 0x300,        
+           swiz_kind_shift = 8
+       };
+
+  inline unsigned char isInvariant() { return _bits & invariant_mask; }
+  inline unsigned char isIndexable() { return _bits & indexable_mask; }
+  inline unsigned char isPartial()   { return _bits & partial_mask; }
+  inline unsigned char isOverlayed() { return _bits & overlay_mask; }
+
+  inline GciByteSwizEType byteSwizKind() const {
+     return (GciByteSwizEType)((_bits & swiz_kind_mask) >> swiz_kind_shift) ;
+  }
+
+  inline void setByteSwizKind(ushort val) {
+    ushort mask = swiz_kind_mask;
+    _bits = (_bits & ~ mask) | ((val << swiz_kind_shift) & mask);
+  }
+
+  inline unsigned char objImpl() {
+    /* implementation format 0..3 , one of GC_FORMAT_OOP..GC_FORMAT_SPECIAL */
+    return _bits & GC_IMPLEMENTATION_MASK;
+  }
+  inline void clearBits() { _bits = 0; }
+
+  inline void setBits(unsigned short b) { _bits = b; }
+
+  inline ushort bits() const { return _bits; }
+
+  inline void setObjImpl(unsigned char f) { 
+    _bits = (_bits & ~ implem_mask) | (f & implem_mask) ; 
+  }
+
+  inline void setPlaceHolder() { _bits |= is_placeholder; }
+
+  inline void setInvariant(unsigned char val) {
+    if (val) { _bits |= invariant_mask; } else { _bits &= ~invariant_mask;} 
+  }
+  inline void setIndexable(unsigned char val) {
+    if (val) { _bits |= indexable_mask; } else { _bits &= ~indexable_mask;} 
+  }
+  inline void setPartial(unsigned char val) {
+    if (val) { _bits |= partial_mask; } else { _bits &= ~partial_mask;} 
+  }
+  inline void setOverlayed(unsigned char val) {
+    if (val) { _bits |= overlay_mask; } else { _bits &= ~overlay_mask;} 
+  }
+};
+
+typedef struct {
+  int64 startIndex;
+  int64 bufSize;
+  int64 numReturned; /* output */
+  GciObjInfoSType *info;
+  ByteType *buffer;
+  int retrievalFlags;
+  BoolType isRpc; /* private, for use by implementation of GCI */
+  }  GciFetchObjInfoArgsSType;
+
+
+#endif

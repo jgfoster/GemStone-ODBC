@@ -1,0 +1,236 @@
+#ifndef GCSI_HF
+#define GCSI_HF TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - gcsi.hf
+ *
+ * Description - Functional interface to the GemStone C Statistics
+ *               Interface (GCSI).
+ *
+ * $Id: gcsi.hf 35449 2015-02-22 21:59:20Z normg $
+ *
+ *========================================================================
+ */
+
+#if defined(__cplusplus)
+extern "C" {
+#endif /* __cplusplus */
+
+#include <stddef.h>
+
+#include "gcicmn.ht"
+#include "shrpcstats.ht"
+
+/* =============================================================================
+ * GcsiInit function
+ *   Initialize the library.
+ *
+ * This function must be called before all other Gcsi functions.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(void) 
+GcsiInit(void);
+
+/* =============================================================================
+ * GcsiAllStatsForMask function
+ *   Get all the cache stats indicated by the bits set in mask. 'resultSize'
+ *   indicates the maximum number of proceses for which stats can be returned.
+ *
+ * Input Arguments:
+ *   mask        Indicates what types or proceses to collect stats for.  Mask bits
+ *               should be set by a bitwise OR of the desired process types.  For
+ *               example, to get stats for the stone and Shared Page Cache Monitor: 
+ *
+ *                  unsigned int mask = SHRPC_MONITOR | SHRPC_STONE;
+ *
+ *   result      Address of an array of kind GcsiResultSType where statistics
+ *               will be stored.
+ *
+ *   resultSize  Pointer to an integer that indicates the size of the result
+ *               in elements (not bytes).  On return, indicates the number of
+ *               that were stored into result are stored into the pointer.
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+ EXTERN_GCI_DEC(int) 
+GcsiAllStatsForMask(unsigned int mask, GcsiResultSType *result, int *resultSize);
+
+/* =============================================================================
+ * GcsiAttachSharedCache function
+ *   Attach to the shared cache with the given name.
+ *
+ * Input Arguments:
+ *   cacheName  Full name of the shard page cache.  
+ *              Format: <stoneName>~<stone host id>
+ *              Use gslist to determine the full name of a shared cache.
+ *   errBuf     A buffer which will contain a string describing an error
+ *   errBufSize Size of errBuf in bytes.
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiAttachSharedCache(const char fullCacheName[], char *errBuf, size_t errBufSize);
+
+/* =============================================================================
+ * GcsiAttachSharedCacheForStone function
+ *   Attach to the shared cache for the given stone name.
+ *
+ * Attaches this process to the named shared page cache.  This function assumes
+ * the cache name is <stoneName>~<stoneHostId> where stoneHostId is the
+ * unique 64 bit host ID of the stone host.  This function may be used to attach
+ * both primary shared page caches (a cache where the stone process lives) and
+ * remote shared page caches.
+ *
+ * Input Arguments:
+ *   stoneName  Name of the stone (e.g.: gs64stone).
+ *   errBuf     Buffer which will contain a string describing an error
+ *   errBufSize Size of errBuf in bytes.
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiAttachSharedCacheForStone(const char stoneName[], char *errBuf, size_t errBufSize);
+
+/* =============================================================================
+ * GcsiDetachSharedCache function
+ *   Detach from the shared page cache
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiDetachSharedCache(void);
+
+/* =============================================================================
+ * GcsiStatsForProcessId
+ *   Get the cache stats for the given process id.
+ *
+ * Input Arguments:
+ *   pid        Process ID to find stats for
+ *   result     Pointer to a GcsiResultSType structure
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiStatsForProcessId(int pid, GcsiResultSType *result);
+
+/* =============================================================================
+ * GcsiFetchMaxProcessesInCache
+ *   Return the maximum number of processes that can be attached to this shared
+ *   cache at any instant.  The result may be used to allocate memory for a
+ *   calls to the GcsiFetchStatsForAll* family of functions.
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiFetchMaxProcessesInCache(int *maxProcesses);
+
+/* =============================================================================
+ * GcsiStatsForGemSessionId
+ *    Get the cache stats for the given gem session id.
+ *
+ * Input Arguments:
+ *   sessionId  Session ID of the gem for which stats are requested.
+ *   result     Pointer to a GcsiResultSType structure
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiStatsForGemSessionId(int sessionId, GcsiResultSType *result);
+
+/* =============================================================================
+ * GcsiStatsForGemSessionWithName
+ *    Get the cache stats for the first gem in the cache with the given cache 
+ *    name.
+ *
+ * Input Arguments:
+ *   gemName    Case-sensitive name of the gem to find.
+ *   result     Pointer to a GcsiResultSType structure
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiStatsForGemSessionWithName(const char *gemName, GcsiResultSType *result);
+
+/* =============================================================================
+ * GcsiStatsForPgsvrSessionId
+ *    Get the cache stats for the given page server with the given session id.
+ *    Remote gems have page servers on the stones cache which assume the same 
+ *    session ID as the remote gem.
+ *
+ * Input Arguments:
+ *   sessionId  Session ID of the page server for which stats are requested.
+ *   result     Pointer to a GcsiResultSType structure
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiStatsForPgsvrSessionId(int sessionId, GcsiResultSType *result);
+
+// GcsiShrPcMonStatAtOffset deleted
+// GcsiStnStatAtOffset deleted
+
+/* =============================================================================
+ * GcsiStatsForStone
+ *    Get the cache stats for the stone if there is a stone attached to this
+ *    shared page cache.
+ *
+ * Input Arguments:
+ *   result     Pointer to a GcsiResultSType structure
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiStatsForStone(GcsiResultSType *result);
+
+/* =============================================================================
+ * GcsiStatsForShrPcMon
+ *    Get the cache stats for the shared page cache monitor process for this
+ *    shared page cache.
+ *
+ * Input Arguments:
+ *   result     Pointer to a GcsiResultSType structure
+ *
+ * Returns:
+ *   0 - success
+ *   Otherwise an error code.  See gcsierr.ht for a list of error codes.
+ *==============================================================================
+ */
+  EXTERN_GCI_DEC(int) 
+GcsiStatsForShrPcMon(GcsiResultSType *result);
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* GCSI_HF */

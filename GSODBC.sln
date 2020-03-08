@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GSODBC", "GSODBC\GSODBC.vcproj", "{05F84FC3-E516-42B2-A671-1413E98A7833}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GciTester", "GciTester\GciTester.vcproj", "{4A8688A9-2F89-48F2-BC26-5A69E97601A9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05F84FC3-E516-42B2-A671-1413E98A7833}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05F84FC3-E516-42B2-A671-1413E98A7833}.Debug|Win32.Build.0 = Debug|Win32
+		{05F84FC3-E516-42B2-A671-1413E98A7833}.Release|Win32.ActiveCfg = Release|Win32
+		{05F84FC3-E516-42B2-A671-1413E98A7833}.Release|Win32.Build.0 = Release|Win32
+		{4A8688A9-2F89-48F2-BC26-5A69E97601A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A8688A9-2F89-48F2-BC26-5A69E97601A9}.Debug|Win32.Build.0 = Debug|Win32
+		{4A8688A9-2F89-48F2-BC26-5A69E97601A9}.Release|Win32.ActiveCfg = Release|Win32
+		{4A8688A9-2F89-48F2-BC26-5A69E97601A9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

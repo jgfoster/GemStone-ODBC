@@ -1,0 +1,204 @@
+#ifndef VERSION_HT
+#define VERSION_HT TRUE
+/*========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved
+ *
+ * Name - version.ht
+ *
+ * Description: Version dependent string constants
+ *
+ * $Id: version.ht 36484 2015-06-01 17:01:59Z otisa $
+ *
+ *========================================================================*/
+
+/* no more includes. KEEP THIS LINE */
+
+/******** Engineering Changeable Values ***********************************/
+
+// EDIT the following two items to change version number 
+
+// first digit must be '3' or NetInfoFind will break.
+#define VER_GS_VERSION "3.3.0" /* specially edited to be pretty... */
+#define VER_MAJOR_NUMS   "330"
+
+/*  This is used by GciProduct(), which is called by GBS. KEEP THIS UP TO DATE!!
+ *   1 =  GemStone/S
+ *   2 =  GemStone/S 2G
+ *   3 =  GemStone/S 64
+ */
+#define VER_GCI_PRODUCT_BYTE 3
+
+#ifdef _LP64
+#define VER_WIDTH "64"    /* size of a pointer in bits */
+#else
+#define VER_WIDTH "32"    /* size of a pointer in bits */
+#endif
+
+/* It would be nice to use VER_MAJOR_NUMS in the following but not
+ * all preprocessors support token pasting.
+ */
+#define VER_NETLDI_NAME "gs64ldi" 
+#define VER_STONE_NAME  "gs64stone"
+
+// 40508
+#define VER_STONE_NAME_AUDIT VER_STONE_NAME "-audit"
+
+// full dll name is:
+// VER_GCILIB_BASENAME + ("lnk"|"rpc") + VER_GCILIB_PROD_NAME + "-" 
+// + VER_MAJOR_NUMS + DYNLIB_EXT
+// e.g. "libgcilnk64-200.so"
+// This is pointed to by a symlink in the $GEMSTONE/lib directory constructed
+// like this:
+// VER_GCILIB_BASENAME + ("lnk"|"rpc") + DYNLIB_EXT
+// e.g. "libgcilnk.so"
+
+#define VER_GCILIB_BASENAME "libgci"
+#define VER_GCILIB_PROD_NAME "64"
+
+#define VER_PGSVRLIB_BASENAME "pgsvr"
+
+   // VER_DBF_LEVEL, the extent compatibility level 
+#define VER_DBF_LEVEL 844 // see VER_BKUP_LEVEL if changing
+
+#define VER_DBF_LEVEL_30 844
+         /* Gemstone v3.0 */
+#define VER_DBF_LEVEL_22 830
+		   /* 830 - Gemstone64 v2.2, changes to CR.scaveng*pages */
+#define VER_DBF_LEVEL_21 828 
+                   /* 828 - Gemstone64 v2.1, add epochDepMapChangesUnion to root page */
+#define VER_DBF_LEVEL_20 827 
+                   /* 827 - Gemstone64 v2.0, reserved oop for IndexManager */
+                   /* 826 - Gemstone64 v2.0, change new bytecode send caches and Ot page values*/
+                   /* 825 - Gemstone64 v2.0 with new interpreter bytecodes */
+                   /* 821 - Gemstone64 v2.0 beta3, changed SmallDouble range*/
+                   /* 820 - Gemstone64 v2.0 up to beta2 */
+                   /* 802 - Added backup of deadObjs carefulBms to fullBackup,
+			    and commitSequence fields */
+                   /* 801 - New formats: bitmap internal nodes, fragment pages*/
+                   /* 800 - 64 bit version from OOCL branch */
+
+  // VER_TRANLOG_LEVEL tranlog compatibility level, normally same as 
+  //  or greater than VER_DBF_LEVEL .
+
+#define VER_TRANLOG_LEVEL 931
+            // 931 v3.3  add randomId in LogRootRecord 
+            // 930 v3.3 - change to lz4 in record-level compression 
+            // 923 v3.2.5 . backupOopHighWater 
+            // 922 v3.2.2 - add login UID to login record
+            // 911 v3.1 support for compressed tranlogs
+            // 910 Fix 41775 - new tranlog record kind LOG_CLEAR_PREV_EPOCH_STATE
+            /* 850 Gs64 v3.0 cleanup logRecordKinds, parallel restore */
+            /* 840 Gs64 v2.2 beta */ 
+            /* 831 Gs64 v2.1 added LOG_LOGIN_RECORD */
+            /* 830 Gs64 v2.1 beta , changed LOG_DEBUG_KIND_STR_SIZE,
+				added LOG_COMPR records  */
+	    /* 828 Gemstone64 v2.0, , added ABORT_DEAD, ABORT_LOGOUT tranlog records */
+	    /* 827  Gemstone64 v2.0 beta3 */
+
+
+		   /* 810 - Gemstone64 v1.1 */
+  /* Gemstone64 v1.1 changed some LOG_DATA record
+	formats , and made VER_TRANLOG_LEVEL independent of VER_DBF_LEVEL */
+
+
+// dbf level required to convert from 1.1 to 2.0
+#define VER_DBF_LEVEL_FOR_20_CONV_from118 802
+#define VER_DBF_LEVEL_FOR_20_CONV_from119 803
+
+#define VER_DBF_LEVEL_2G_from6x 710  /* 6.x dbf converted to 2G format,
+					but root pages still in 6.1 format */
+
+#define VER_DBF_LEVEL_2G 700
+                   /* 700 - 2 billion oop version on OOCL branch */
+
+#define VER_DBF_LEVEL_62   62
+
+#define VER_DBF_LEVEL_61   56
+                   /* 56  6.0.1 release
+                          BUGFIX 27994/27701: new frameAgePtr table in cache */
+                   /* 55  6.0 release */
+                   /* 54+ 5.1.5 bugfix 22885:
+                          Added numCommitRecordsWithReclaimedOops in place of spare.
+                          Use same version number for compatibility with earlier
+                          dbf format */
+
+                   /* 54  add new instructions for primitives with rcvrClass*/
+                      /*  53 was 5.0 alpha1 release */
+		   /* 53  new security features, change password algorithm*/
+		   /* 52, modified prolog bytecodes to have non-protected mode
+			  counterparts */
+                   /* 51, changes to string compare primitives */
+                   /* 50 add instVars subclasses, classCategory in Class */
+                   /* 49 remove classVar Category, add civ classCategory, 
+                         add ram oops format bit. all in Behavior */ 
+                   /* 48 new class library */
+                   /* 47 remove GsPortableCode */
+                   /* 46 bug fixes changed oop sort order within Nscs */ 
+                   /* 45 was 5.0 alpha prior to Dec 9, 95 */
+// VER_DBF_LEVEL_41 41
+// VER_DBF_LEVEL_40 38
+        /* v3.5 beta2.x and above, and 4.0.x are 38 */
+        /* v3.5 alpha 2 was 37 */
+        /* v3.2 was  33 */
+
+       /* object backup file compatibility level, 
+        *  must be in range REP_MAX_TRANSFORM_BYTE..255 , i.e. 4..255 
+        */
+#define VER_BKUP_LEVEL 846 // changed for 3.3
+  // backup level was VER_DBF_LEVEL for 3.2 
+  // could be changed back to VER_DBF_LEVEL once it catches up
+
+/* copyright string moved to version.c_template */
+
+
+/* also note COPYPRO_VERSION_LEVEL in copypro.ht */
+
+                                   /* Gem,Stone executable to DBF string */ 
+#define VER_DBF_VERSION_NUM_STR  "820.0"
+
+
+// gem to stone compatibility
+//   VER_STN_CALL_VERSION_NUM_STR replaced by VER_GS_SVN_REV_STR logic
+
+// gem to pgsvr compatibility
+//   VER_RDBF_LEVEL 950    // replaced by VER_GS_SVN_REV_NUM
+
+// process to shared cache compatibility
+//  VER_SHRPC_COMPATIBILITY_LEVEL // replaced by VER_GS_SVN_REV_NUM
+
+// process to netldi  compatibility
+#define VER_NETLDI_LEVEL 33000  /* Gs64 v3.3.0 as of 6 April 2015 */
+
+// gci client to gem  compatibility
+#define VER_LGC_LEVEL 33001  /* Gs64 v3.3.0 as of 5 May 2015 */  
+
+typedef enum {
+  VER_INFO_CPU_KIND,
+  VER_INFO_CPU_ARCH,
+  VER_INFO_GS_BUILD_ARCH,
+  VER_INFO_GS_BUILD_DATE,
+  VER_INFO_GS_IMAGE_KIND,
+  VER_INFO_GS_RELEASE,
+  VER_INFO_GS_VERSION,
+  VER_INFO_NODE_NAME,
+  VER_INFO_OS_NAME,
+  VER_INFO_OS_RELEASE,
+  VER_INFO_OS_VERSION,
+  VER_INFO_PROCESS_ID,
+  VER_INFO_PROCESSOR_COUNT,
+  VER_INFO_GS_BUILD_SERIAL_NUM,
+  VER_INFO_GS_BUILD_TYPE
+  } VerParamEType;
+
+typedef enum {
+  VER_INT_KIND,
+  VER_STRING_KIND
+  } VerResultEType;
+
+typedef struct {
+  VerResultEType kind; 
+  int intVal; 
+  char stringVal[300];
+  } VerParamResultSType;
+
+#endif /* version.ht */

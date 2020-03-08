@@ -1,0 +1,127 @@
+#ifndef L2UNIX_HF
+#define L2UNIX_HF TRUE
+/*=========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - l2unix.hf
+ *
+ * $Id: l2unix.hf 32752 2014-02-28 22:11:10Z stever $
+ *
+ *========================================================================
+ */
+#include "flag.ht"
+
+
+#if defined(FLG_UNIX)
+#include <pwd.h>
+#include <sys/file.h>
+#include <dirent.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <netdb.h>
+#include <grp.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#if defined(FLG_APPLE_UNIX)
+#include <malloc/malloc.h>
+#else
+#include <malloc.h>
+#endif
+
+#include <memory.h>
+#include <string.h>
+#endif /* FLG_UNIX */
+
+#if defined(FLG_UNIX_POLL)
+#include <poll.h>
+#endif
+
+#if defined(FLG_UNIX)
+#include <fcntl.h>
+#endif
+
+#if defined(FLG_MSWIN32)
+typedef int pid_t;
+#endif
+
+
+#if defined(FLG_MSWIN32)
+#include <fcntl.h>
+#include <sys/stat.h>
+#endif
+
+#if defined(FLG_MSWIN32) 
+#include <process.h>
+#endif
+
+#if defined(FLG_SOLARIS_UNIX)
+#include <ieeefp.h>
+#include <siginfo.h>
+#include <sys/sockio.h>
+#include <sys/systeminfo.h>
+#endif
+
+#if defined(FLG_LINUX_UNIX) || defined(FLG_APPLE_UNIX)
+#include <sys/time.h>
+#endif
+
+/* stropts.h incompatible with HotSpot VM C++ code ; must include stropts.h in
+ * the specific C files that need it
+ */
+/*  include <sys/stropts.h> */
+
+
+/* no more includes. KEEP THIS LINE */
+
+#if defined(FLG_NO_UID_T)
+typedef unsigned short uid_t;
+typedef unsigned short gid_t;
+#endif
+
+/*******  Macros defined in this module  **********************************/
+
+
+#if defined(FLG_MSWIN32)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define fsync(fd) _commit(fd)
+#define ftruncate(fd,size) _chsize(fd,size)
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif /* __cplusplus */
+
+#endif
+
+#if defined(FLG_MSWIN32) 
+  /* O_BINARY already defined */
+#else
+#define O_BINARY 0
+#endif
+
+
+#ifdef FLG_UNIX
+#if defined(FLG_APPLE_UNIX)
+typedef struct stat UnixIoStatSType ; // no stat64 on BSD yet
+#else
+typedef struct stat64 UnixIoStatSType ;
+#endif
+#elif defined(FLG_MSWIN32) 
+typedef struct _stati64 UnixIoStatSType;
+#else
++++ port error
+#endif
+
+/*******  prototypes defined in this module  **********************************/
+
+  /* Don't define any prototypes.
+   * Use system header files instead!
+   */
+
+
+#endif /* l2unix.hf */

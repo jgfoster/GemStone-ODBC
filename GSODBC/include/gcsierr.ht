@@ -1,0 +1,56 @@
+#ifndef GCSIERR_HT
+#define GCSIERR_HT TRUE
+/*========================================================================
+ * Copyright (C) GemTalk Systems 1986-2016.  All Rights Reserved.
+ *
+ * Name - gcsierr.ht
+ *
+ * Description: 
+ *
+ * $Id: gcsierr.ht 32752 2014-02-28 22:11:10Z stever $
+ *
+ *========================================================================
+ */
+
+/*******  GemStone constants/types defined in this and other modules ********/
+
+
+/* no more includes. KEEP THIS LINE */
+
+enum {
+  GCSI_SUCCESS, // operation was sucessful
+  GCSI_ERR_NO_INIT, // GcsiInit() was not called
+  GCSI_ERR_CACHE_ALREADY_ATTACHED, // the requested cache is already attached
+  GCSI_ERR_NOT_FOUND, // the requested session or process ID was not found
+  GCSI_ERR_BAD_ARG, // an invalid argument was specified.
+  GCSI_ERR_CACHE_CONNECTION_SEVERED, // the cache has been shutdown
+  GCSI_ERR_NO_STONE, // stone stats requested on a cache with no stone process
+  GCSI_ERR_CACHE_NOT_ATTACHED, // the requested cache is not attached
+  GCSI_ERR_NO_MORE_HANDLES, // max number of caches are attached
+  GCSI_ERR_CACHE_ATTACH_FAILED, // attempt to attach has failed
+  GCSI_ERR_WATCHER_THREAD_FAILED, // attempt to start the watcher thread failed
+  GCSI_ERR_CACHE_WRONG_VERSION, // this executable is incompatible with the shared cache
+  GCSI_ERR_CACHE_NOT_FOUND // cache with this name was not found on this host
+};
+
+static inline const char *GcsiStringFromErrorCode(int errorCode) {
+  switch(errorCode) {
+  case GCSI_SUCCESS: return "Operation was successful"; break; 
+  case GCSI_ERR_NO_INIT: return "GcsiInit() must be called first."; break;
+  case GCSI_ERR_CACHE_ALREADY_ATTACHED: return "The shared cache is already attached"; break;
+  case GCSI_ERR_NOT_FOUND: return "The requested session or process was not found"; break;
+  case GCSI_ERR_BAD_ARG: return "Bad argument passed to  Gcsi function"; break;
+  case GCSI_ERR_CACHE_CONNECTION_SEVERED: return "The connection to the shared cache was lost"; break;
+  case GCSI_ERR_NO_STONE: return "No stone process exists on this shared cache"; break;
+  case GCSI_ERR_CACHE_NOT_ATTACHED: return "No shared page cache is currently attached"; break;
+  case GCSI_ERR_NO_MORE_HANDLES: return "Only one shared cache may be attached"; break;
+  case GCSI_ERR_CACHE_ATTACH_FAILED: return "The attempt to attach the shared cache has failed"; break;
+  case GCSI_ERR_WATCHER_THREAD_FAILED: return "The cache watcher thread could not be started"; break;
+  case GCSI_ERR_CACHE_WRONG_VERSION: return "Shared cache version does not match that of libgcsi.so"; break; 
+  case GCSI_ERR_CACHE_NOT_FOUND: return "No shared page cache for the given stone name was found on this host."; break;
+  default:
+    return "Unknown error code"; break;
+  }
+}
+
+#endif /* GCIERR_HT */
